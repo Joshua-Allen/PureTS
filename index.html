@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Game</title>
+
+    <!--
+      Styles are bundled by Vite from styles/main.scss and each screen's .scss.
+      No separate CSS compilation step is needed.
+    -->
+
+    <style>
+      /* ── Critical layout — inlined so there is no flash of unstyled content ── */
+
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      html, body {
+        width: 100%; height: 100%;
+        overflow: hidden;
+        background: #fff;
+      }
+
+      /* Outer shell — fills the viewport and centres the game. */
+      #game {
+        position: relative;
+        width: 100%; height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /*
+        Game world canvas.
+        CSS size is 100% of #game; RenderSystem matches the internal pixel
+        resolution to this rect × devicePixelRatio each frame via onResize().
+      */
+      #world {
+        position: absolute;
+        inset: 0;
+        width: 100%; height: 100%;
+        display: block;        /* removes inline-block gap */
+        z-index: 0;
+      }
+
+      /*
+        HTML UI overlay.
+        Sits directly on top of the canvas; pointer-events are none by default
+        so clicks pass through to the canvas unless a child explicitly enables them.
+      */
+      #ui-layer {
+        position: absolute;
+        inset: 0;
+        width: 100%; height: 100%;
+        z-index: 10;
+        pointer-events: none;
+      }
+
+      /*
+        Debug HTML overlay — sits above everything.
+        Only visible when Config.debug is true (DebugSystem toggles display).
+        pointer-events: none so it never intercepts input.
+      */
+      #debug-layer {
+        position: absolute;
+        inset: 0;
+        width: 100%; height: 100%;
+        z-index: 100;
+        pointer-events: none;
+        display: none;           /* DebugSystem enables this at runtime */
+        font: 14px monospace;
+        color: black;
+      }
+
+    </style>
+  </head>
+
+  <body>
+    <div id="game">
+
+      <!--
+        Canvas — RenderSystem clears and redraws this every frame.
+        Background → Midground → Foreground layers paint here.
+      -->
+      <canvas id="world"></canvas>
+
+      <!--
+        HTML overlay — UILayer manages DOM children here.
+        Used for HUD elements, menus, dialogue — anything text-heavy or CSS-animated.
+      -->
+      <div id="ui-layer"></div>
+
+      <!--
+        Debug HTML overlay — DebugSystem manages children here.
+        Rendered above everything; only active when Config.debug is true.
+      -->
+      <div id="debug-layer"></div>
+
+    </div>
+
+    <!-- Entry point — Vite handles TypeScript compilation and SCSS bundling. -->
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

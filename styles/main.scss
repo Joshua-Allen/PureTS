@@ -1,0 +1,12 @@
+// ============================================================
+// main.scss  —  Root stylesheet, imports base tokens only.
+//               Each screen's SCSS lives alongside its source:
+//                 src/screens/<name>/<Name>Screen.scss
+//                 src/screens/game/Layers/<Name>Layer.scss
+//               Live Sass Compiler picks up all .scss files
+//               in the project automatically.
+// ============================================================
+
+// Base
+@use 'reset';
+@use 'variables';
