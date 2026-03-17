@@ -25,12 +25,7 @@ export class ButtonObject extends GameObject {
     height = 60,
   ) {
     super(['button', 'static'], x, y, width, height, eventBus);
-/*
-    this.onViewportResize = ({ width, height }) => {
-      this.x = (width  - this.width)  / 2;
-      this.y = (height - this.height) / 2;
-    };
-*/
+
     this.onInputClick = ({ mx, my, button }) => {
       if (!this.active || !this.visible || button !== 0) return;
       if (this.containsPoint(mx, my)) this.onPress();

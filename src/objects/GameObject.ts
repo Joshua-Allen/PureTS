@@ -18,6 +18,10 @@ export class GameObject {
   width: number;
   height: number;
 
+  // Origin / pivot point (pixel offset from x, y — used for rotation and centered drawing)
+  originX: number;
+  originY: number;
+
   // Motion
   vx: number;
   vy: number;
@@ -25,6 +29,7 @@ export class GameObject {
   // Appearance
   alpha: number;
   depth: number;
+  rotation: number; // radians
 
   // Lifecycle
   active:        boolean;
@@ -49,6 +54,9 @@ export class GameObject {
     this.height  = height;
     this.vx      = 0;
     this.vy      = 0;
+    this.originX = 0;
+    this.originY = 0;
+    this.rotation    = 0;
     this.alpha       = 1;
     this.depth       = 0;
     this.active       = true;
@@ -114,13 +122,19 @@ export class GameObject {
   }
 
   __draw(ctx: CanvasRenderingContext2D): void {
-    const needsSave = this.alpha !== 1 || this.clipToBounds;
+    const needsSave = this.alpha !== 1 || this.clipToBounds || this.rotation !== 0;
     if (!needsSave) {
       this.draw(ctx);
       return;
     }
 
     ctx.save();
+
+    if (this.rotation !== 0) {
+      ctx.translate(this.x + this.originX, this.y + this.originY);
+      ctx.rotate(this.rotation);
+      ctx.translate(-this.originX, -this.originY);
+    }
 
     if (this.clipToBounds) {
       ctx.beginPath();
