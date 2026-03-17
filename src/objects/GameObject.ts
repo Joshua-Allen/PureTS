@@ -27,10 +27,11 @@ export class GameObject {
   depth: number;
 
   // Lifecycle
-  active:      boolean;
-  visible:     boolean;
-  isMouseOver: boolean;
-  isMouseDown: boolean;
+  active:        boolean;
+  visible:       boolean;
+  clipToBounds:  boolean;
+  isMouseOver:   boolean;
+  isMouseDown:   boolean;
 
   private readonly _eventBus?:     EventBus;
   private readonly _onMouseMove?:  (data: { mx: number; my: number }) => void;
@@ -50,10 +51,11 @@ export class GameObject {
     this.vy      = 0;
     this.alpha       = 1;
     this.depth       = 0;
-    this.active      = true;
-    this.visible     = true;
-    this.isMouseOver = false;
-    this.isMouseDown = false;
+    this.active       = true;
+    this.visible      = true;
+    this.clipToBounds = false;
+    this.isMouseOver  = false;
+    this.isMouseDown  = false;
 
     if (eventBus) {
       this._eventBus = eventBus;
@@ -112,14 +114,26 @@ export class GameObject {
   }
 
   __draw(ctx: CanvasRenderingContext2D): void {
-    if (this.alpha === 1) {
+    const needsSave = this.alpha !== 1 || this.clipToBounds;
+    if (!needsSave) {
       this.draw(ctx);
       return;
     }
-    const prev = ctx.globalAlpha;
-    ctx.globalAlpha = prev * this.alpha;
+
+    ctx.save();
+
+    if (this.clipToBounds) {
+      ctx.beginPath();
+      ctx.rect(this.x, this.y, this.width, this.height);
+      ctx.clip();
+    }
+
+    if (this.alpha !== 1) {
+      ctx.globalAlpha = ctx.globalAlpha * this.alpha;
+    }
+
     this.draw(ctx);
-    ctx.globalAlpha = prev;
+    ctx.restore();
   }
 
   __destroy(): void {

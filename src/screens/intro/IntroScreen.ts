@@ -7,14 +7,18 @@ import { EventBus }       from '../../events/EventBus';
 import { AudioManager }   from '../../managers/AudioManager';
 import { ScreenManager }  from '../../managers/ScreenManager';
 import { MainMenuScreen } from '../mainMenu/MainMenuScreen';
-import { IntroUILayer }   from './Layers/IntroUILayer';
+import { IntroForegroundLayer } from './Layers/IntroForegroundLayer';
 
-const DURATION = 1; // seconds
+const FADE_IN_DURATION  = .1;   // seconds
+const WAIT_DURATION     = .2;   // seconds
+const FADE_OUT_DURATION = .1;   // seconds
+
+type IntroState = 'fade-in' | 'waiting' | 'fade-out';
 
 export class IntroScreen extends Screen {
-  private transitionTimer: ReturnType<typeof setTimeout> | null = null;
-  private elapsed = 0;
-  private uiLayer!: IntroUILayer;
+  private state:   IntroState = 'fade-in';
+  private elapsed  = 0;
+  private uiLayer!: IntroForegroundLayer;
 
   constructor(
     private readonly eventBus:      EventBus,
@@ -27,28 +31,50 @@ export class IntroScreen extends Screen {
   async onEnter(): Promise<void> {
     // TODO: add canvas layers, load assets, start intro music, etc.
 
+    this.state   = 'fade-in';
     this.elapsed = 0;
-    this.uiLayer = new IntroUILayer();
-    this.uiLayer.setText(String(DURATION));
+    this.uiLayer = new IntroForegroundLayer();
+    this.uiLayer.alpha = 1;
     this.addLayer(this.uiLayer);
-
-    this.transitionTimer = setTimeout(() => {
-      this.screenManager.transition(new MainMenuScreen(this.eventBus, this.audio));
-    }, DURATION * 1000);
   }
 
   override step(dt: number): void {
     this.elapsed += dt;
-    const remaining = Math.max(0, DURATION - this.elapsed);
-    this.uiLayer.setText(String(Math.ceil(remaining)));
+
+    switch (this.state) {
+      case 'fade-in': {
+        const t = Math.min(this.elapsed / FADE_IN_DURATION, 1);
+        this.uiLayer.alpha = 1 - t;
+        if (this.elapsed >= FADE_IN_DURATION) {
+          this.state   = 'waiting';
+          this.elapsed = 0;
+        }
+        break;
+      }
+
+      case 'waiting': {
+        this.uiLayer.alpha = 0;
+        if (this.elapsed >= WAIT_DURATION) {
+          this.state   = 'fade-out';
+          this.elapsed = 0;
+        }
+        break;
+      }
+
+      case 'fade-out': {
+        const t = Math.min(this.elapsed / FADE_OUT_DURATION, 1);
+        this.uiLayer.alpha = t;
+        if (this.elapsed >= FADE_OUT_DURATION) {
+          this.screenManager.transition(new MainMenuScreen(this.eventBus, this.audio));
+        }
+        break;
+      }
+    }
+
     super.step(dt);
   }
 
   onExit(): void {
-    if (this.transitionTimer !== null) {
-      clearTimeout(this.transitionTimer);
-      this.transitionTimer = null;
-    }
     this.audio.stopAll();
   }
 }

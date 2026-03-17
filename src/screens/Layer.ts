@@ -16,6 +16,7 @@ import { GameObject } from '../objects/GameObject';
 export class Layer {
   active:  boolean = true;
   visible: boolean = true;
+  alpha:   number  = 1;
 
   protected objects: GameObject[] = [];
 
@@ -45,9 +46,18 @@ export class Layer {
   draw(ctx: CanvasRenderingContext2D): void {
     if (!this.visible) return;
     const sorted = this.objects.slice().sort((a, b) => a.depth - b.depth);
+    if (this.alpha === 1) {
+      for (const o of sorted) {
+        if (o.visible) o.__draw(ctx);
+      }
+      return;
+    }
+    const prev = ctx.globalAlpha;
+    ctx.globalAlpha = prev * this.alpha;
     for (const o of sorted) {
       if (o.visible) o.__draw(ctx);
     }
+    ctx.globalAlpha = prev;
   }
 
   // Returns a read-only view of this layer's objects.

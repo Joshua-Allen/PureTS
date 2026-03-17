@@ -93,16 +93,21 @@ PureTS/
     │   └── scss.d.ts        # Ambient declaration allowing .scss imports in TS
     │
     ├── objects/
-    │   └── GameObject.ts    # Base class for every object in the game world
-    │
-    ├── components/
-    │   └── Component.ts     # Reusable behaviours attached to entities
+    │   ├── GameObject.ts    # Base class for every object in the game world
+    │   ├── ButtonObject.ts  # Canvas-rendered clickable button
+    │   ├── Column.ts        # Scrolling dot column
+    │   └── ColumnDot.ts     # Single scrolling dot used by Column
     │
     ├── systems/             # Per-frame processors — run every game loop tick
     │   ├── InputSystem.ts   # Keyboard, mouse, gamepad input
     │   ├── PhysicsSystem.ts # Movement, gravity, collision detection
     │   ├── RenderSystem.ts  # Clears canvas, draws layers bottom to top
-    │   └── DebugSystem.ts   # Hitboxes, vectors, FPS overlay (debug only)
+    │   └── debug/
+    │       ├── DebugSystem.ts    # Hitboxes, vectors, FPS overlay (debug only)
+    │       ├── DebugPanel.ts
+    │       ├── InfoPanel.ts
+    │       ├── EventLogPanel.ts
+    │       └── PanelRow.ts
     │
     ├── managers/            # Stateful coordinators — not per-frame processors
     │   ├── ScreenManager.ts # Holds active screen, handles transitions
@@ -116,7 +121,7 @@ PureTS/
     │   ├── game/
     │   │   ├── GameScreen.ts
     │   │   ├── GameScreen.scss
-    │   │   └── Layers/              # Canvas-rendered (drawn via ctx)
+    │   │   └── Layers/
     │   │       ├── BackgroundLayer.ts   # Sky, distant scenery, parallax
     │   │       ├── MidgroundLayer.ts    # Terrain, platforms, structures
     │   │       ├── ForegroundLayer.ts   # Player, enemies, items
@@ -124,19 +129,17 @@ PureTS/
     │   │
     │   ├── mainMenu/
     │   │   ├── MainMenuScreen.ts
-    │   │   ├── MainMenuScreen.scss
     │   │   └── Layers/
+    │   │       └── MainMenuLayer.ts
     │   │
     │   ├── gameOver/
     │   │   ├── GameOverScreen.ts
-    │   │   ├── GameOverScreen.scss
     │   │   └── Layers/
     │   │
     │   └── intro/
-    │       ├── IntroScreen.ts
+    │       ├── IntroScreen.ts       # Three-state fade-in / wait / fade-out
     │       └── Layers/
-    │           ├── IntroUILayer.ts      # HTML overlay — countdown timer display
-    │           └── IntroUILayer.scss    # Imported by IntroUILayer.ts
+    │           └── IntroForegroundLayer.ts  # Full-screen black overlay
     │
     ├── events/
     │   └── EventBus.ts      # Typed pub/sub bus — decouples systems
@@ -148,7 +151,8 @@ PureTS/
     │
     └── utils/
         ├── helpers.ts       # General utility functions
-        └── Logger.ts        # Structured logger (silenced in production)
+        ├── Logger.ts        # Structured logger (silenced in production)
+        └── Strings.ts       # Localised string lookup — t('key')
 ```
 
 ---
@@ -252,6 +256,35 @@ screenManager.transition(new IntroScreen(eventBus, audio, screenManager, session
 ```
 
 Any new event names used for state changes (e.g. `'player:health-changed'`) must be added to `GameEvents` in `src/types/index.ts` before emitting.
+
+### Layer flags
+
+| Property | Default | Purpose |
+|---|---|---|
+| `active` | `true` | When false, `step()` is skipped for all objects in the layer |
+| `visible` | `true` | When false, `draw()` is skipped for all objects in the layer |
+| `alpha` | `1` | Multiplies `ctx.globalAlpha` for every object in the layer — use for layer-wide fades |
+
+### GameObject flags
+
+| Property | Default | Purpose |
+|---|---|---|
+| `active` | `true` | When false, `step()` is skipped |
+| `visible` | `true` | When false, `draw()` is skipped |
+| `alpha` | `1` | Multiplies `ctx.globalAlpha` for this object's draw call |
+| `clipToBounds` | `false` | When true, `draw()` is clipped to the object's `x/y/width/height` rect |
+
+### Localisation
+
+`src/utils/Strings.ts` provides a minimal `t(key)` lookup:
+
+```ts
+import { t } from '../utils/Strings';
+
+t('play') // → 'Play'
+```
+
+Add new keys to the `locales.en` object in `Strings.ts`. Add new languages as additional locale entries. Call `setLocale('fr')` to switch at runtime.
 
 ### Debug Mode
 

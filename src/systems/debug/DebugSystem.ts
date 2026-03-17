@@ -56,7 +56,7 @@ export class DebugSystem {
     const height = ctx.canvas.height / dpr;
 
     ctx.save();
-    ctx.strokeStyle = 'rgba(0, 0, 255, 1)';
+    ctx.strokeStyle = 'rgba(0, 0, 255, 0.3)';
     ctx.lineWidth   = 1;
 
     // 2 vertical lines → 3 columns
