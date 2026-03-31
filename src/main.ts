@@ -12,6 +12,9 @@ import { DebugSystem }     from './systems/debug/DebugSystem';
 import { ScreenManager }   from './managers/ScreenManager';
 import { AudioManager }    from './managers/AudioManager';
 import { ResourceManager } from './managers/ResourceManager';
+import { UrlManager }    from './managers/UrlManager';
+import { ApiClient }     from './api/ApiClient';
+import { WalletApi }     from './api/WalletApi';
 import { IntroScreen } from './screens/intro/IntroScreen';
 
 // ---- Canvas setup --------------------------------------------
@@ -27,9 +30,13 @@ const debug          = new DebugSystem(eventBus);
 const resources      = new ResourceManager(eventBus);
 const audio          = new AudioManager(eventBus);
 const screenManager  = new ScreenManager(eventBus);
+const urlManager     = new UrlManager();
+const apiBase        = urlManager.rgsUrl ?? 'https://api.stake-engine.com';
+const apiClient      = new ApiClient(apiBase);
+const walletApi      = new WalletApi(apiClient);
 
 // ---- Initial screen ------------------------------------------
-screenManager.transition(new IntroScreen(eventBus, audio, screenManager));
+screenManager.transition(new IntroScreen(eventBus, audio, screenManager, resources, walletApi, urlManager));
 
 // ---- Game loop -----------------------------------------------
 let lastTime = performance.now();
@@ -43,9 +50,9 @@ function loop(now: number): void {
   input.step(dt);
   physics.step(dt, screen);
   renderer.clear();
-  debug.preDraw(ctx, screen?.layers ?? [], dt);
+  //debug.preDraw(ctx, screen?.layers ?? [], dt);
   renderer.draw(screen);
-  debug.draw(ctx, screen?.layers ?? [], dt);
+  //debug.draw(ctx, screen?.layers ?? [], dt);
 
   requestAnimationFrame(loop);
 }

@@ -12,13 +12,30 @@
 // ============================================================
 
 import { GameObject } from '../objects/GameObject';
+import { EventBus }   from '../events/EventBus';
 
 export class Layer {
   active:  boolean = true;
   visible: boolean = true;
   alpha:   number  = 1;
 
+  protected vpWidth:  number = window.innerWidth;
+  protected vpHeight: number = window.innerHeight;
+
   protected objects: GameObject[] = [];
+
+  private readonly _eventBus?: EventBus;
+  private readonly _onViewportResize = ({ width, height }: { width: number; height: number }): void => {
+    this.vpWidth  = width;
+    this.vpHeight = height;
+  };
+
+  constructor(eventBus?: EventBus) {
+    if (eventBus) {
+      this._eventBus = eventBus;
+      this._eventBus.on('viewport:resize', this._onViewportResize);
+    }
+  }
 
   // Adds an object to this layer and calls its init hook.
   add(object: GameObject): void {
@@ -66,9 +83,10 @@ export class Layer {
     return this.objects;
   }
 
-  // Destroys all objects and empties the layer.
+  // Destroys all objects, empties the layer, and unsubscribes viewport listener.
   // Called on screen transitions.
   clear(): void {
+    this._eventBus?.off('viewport:resize', this._onViewportResize);
     for (const o of this.objects) o.__destroy();
     this.objects = [];
   }

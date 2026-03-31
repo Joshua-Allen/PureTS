@@ -12,9 +12,8 @@ export class ScreenManager {
   private _current: Screen | null = null;
 
   constructor(private readonly eventBus: EventBus) {
-    // Listen for event-driven transitions (e.g. buttons emitting 'screen:transition')
-    this.eventBus.on('screen:transition', ({ to }) => {
-      console.warn(`[ScreenManager] event-driven transition to "${to}" — call transition() directly with a Screen instance.`);
+    this.eventBus.on('screen:transition', ({ screen }) => {
+      this.transition(screen);
     });
   }
 

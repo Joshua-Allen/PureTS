@@ -13,3 +13,30 @@ export function canvasCoords(canvas: HTMLCanvasElement, e: MouseEvent): { mx: nu
     my: e.clientY - rect.top,
   };
 }
+
+// ─── Easing ────────────────────────────────────────────────────────────────
+
+export type EasingName = 'linear' | 'ease-in' | 'ease-out' | 'ease-in-out';
+export type EasingFn   = (t: number) => number;
+export type Easing     = EasingName | EasingFn;
+
+const EASINGS: Record<EasingName, EasingFn> = {
+  'linear':      t => t,
+  'ease-in':     t => t * t,
+  'ease-out':    t => t * (2 - t),
+  'ease-in-out': t => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t,
+};
+
+export function resolveEasing(easing: Easing): EasingFn {
+  return typeof easing === 'function' ? easing : EASINGS[easing];
+}
+
+// ─── Math helpers ──────────────────────────────────────────────────────────
+
+export function lerp(a: number, b: number, t: number): number {
+  return a + (b - a) * t;
+}
+
+export function clamp(v: number, min: number, max: number): number {
+  return v < min ? min : v > max ? max : v;
+}

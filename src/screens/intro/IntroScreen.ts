@@ -6,6 +6,9 @@ import { Screen }         from '../Screen';
 import { EventBus }       from '../../events/EventBus';
 import { AudioManager }   from '../../managers/AudioManager';
 import { ScreenManager }  from '../../managers/ScreenManager';
+import { ResourceManager } from '../../managers/ResourceManager';
+import { UrlManager }     from '../../managers/UrlManager';
+import { WalletApi }      from '../../api/WalletApi';
 import { MainMenuScreen } from '../mainMenu/MainMenuScreen';
 import { IntroForegroundLayer } from './Layers/IntroForegroundLayer';
 
@@ -23,7 +26,10 @@ export class IntroScreen extends Screen {
   constructor(
     private readonly eventBus:      EventBus,
     private readonly audio:         AudioManager,
-    private readonly screenManager: ScreenManager
+    private readonly screenManager: ScreenManager,
+    private readonly resources:     ResourceManager,
+    private readonly walletApi:     WalletApi,
+    private readonly urlManager:    UrlManager,
   ) {
     super();
   }
@@ -65,7 +71,7 @@ export class IntroScreen extends Screen {
         const t = Math.min(this.elapsed / FADE_OUT_DURATION, 1);
         this.uiLayer.alpha = t;
         if (this.elapsed >= FADE_OUT_DURATION) {
-          this.screenManager.transition(new MainMenuScreen(this.eventBus, this.audio));
+          this.screenManager.transition(new MainMenuScreen(this.eventBus, this.audio, this.resources, this.walletApi, this.urlManager));
         }
         break;
       }

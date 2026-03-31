@@ -96,6 +96,20 @@ export class ApiClient {
   // ── Private ────────────────────────────────────────────────
 
   private async parseResponse<T>(endpoint: string, response: Response): Promise<T> {
+    // Check HTTP status before attempting JSON parse — error bodies may be plain text.
+    if (!response.ok) {
+      let errorDetail = response.statusText;
+      try {
+        const body = await response.json() as Record<string, string>;
+        errorDetail = body?.error ?? errorDetail;
+      } catch {
+        // Non-JSON body (e.g. plain-text "404 page not found") — use status text.
+      }
+      const err = new Error(`API Error ${response.status}: ${errorDetail}`);
+      this.handleFailure(err);
+      throw err;
+    }
+
     let result: T;
     try {
       result = await response.json() as T;
@@ -105,13 +119,6 @@ export class ApiClient {
     }
 
     Logger.info('ApiClient', `Response ${endpoint}`, result);
-
-    if (!response.ok) {
-      const err = new Error(`API Error ${response.status}: ${(result as Record<string, string>)?.error ?? response.statusText}`);
-      this.handleFailure(err);
-      throw err;
-    }
-
     this.failureCount = 0;
     return result;
   }

@@ -2,13 +2,8 @@
 // api/WalletApi.ts  —  Wallet and session endpoints.
 // ============================================================
 
-import { ApiClient } from './ApiClient';
-
-// Todo: get the real 
-export interface AuthenticateResponse {
-  balance:  number;
-  currency: string;
-}
+import { ApiClient }            from './ApiClient';
+import { AuthenticateResponse } from './PlayerApi';
 
 export interface PlayResponse {
   balance:  number;
@@ -25,6 +20,7 @@ export class WalletApi {
   constructor(private readonly client: ApiClient) {}
 
 
+  // Returns balance, currency, config (bet levels), and the initial state event array.
   authenticate(sessionID: string): Promise<AuthenticateResponse> {
     return this.client.post<AuthenticateResponse>('/wallet/authenticate', { sessionID });
   }

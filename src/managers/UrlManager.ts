@@ -42,7 +42,9 @@ export class UrlManager {
    * Defaults to the production API endpoint in normal (non-replay) mode.
    */
   get rgsUrl(): string | null {
-    const raw = this.params.get('rgsUrl') ?? (this.replay ? null : 'https://api.stake-engine.com');
+    // Accept both ?rgs_url= (test platform / Example-Main.js convention) and
+    // ?rgsUrl= (camelCase legacy fallback).
+    const raw = this.params.get('rgs_url') ?? this.params.get('rgsUrl') ?? (this.replay ? null : 'https://api.stake-engine.com');
     return this.validateRgsUrl(raw);
   }
 
